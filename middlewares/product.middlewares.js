@@ -11,10 +11,11 @@ exports.validProductById = catchAsync(async (req, res, next) => {
       id,
       status: true,
     },
-    include: [{
-      model: ProductImg,
-    },
-  ],
+    include: [
+      {
+        model: ProductImg,
+      },
+    ],
   });
 
   if (!product) {
@@ -25,16 +26,16 @@ exports.validProductById = catchAsync(async (req, res, next) => {
   next();
 });
 
-exports.validBodyProductById = catchAsync( async (req,res, next) => {
-  const {productId} = req.body;
+exports.validBodyProductById = catchAsync(async (req, res, next) => {
+  const { productId } = req.body;
 
   const product = await Product.findOne({
-    where:{
+    where: {
       id: productId,
       status: true,
-    }
+    },
   });
-  if(!product){
+  if (!product) {
     return next(new AppError('Product not found', 404));
   }
 
@@ -42,41 +43,43 @@ exports.validBodyProductById = catchAsync( async (req,res, next) => {
   next();
 });
 
-exports.validIfExistProductsInStock = catchAsync ( async(req,res,next) => {
-  const {product} = req;
-  const {quantity} = req.body;
+exports.validIfExistProductsInStock = catchAsync(async (req, res, next) => {
+  const { product } = req;
+  const { quantity } = req.body;
 
-  if(product.quantity <quantity) {
-    return next(new AppError('The are not enough products in the stock' , 400));
-
+  if (product.quantity < quantity) {
+    return next(new AppError('The are not enough products in the stock', 400));
   }
 
-  next()
-
+  next();
 });
 
-exports.validExistProductInStockForUpdate = catchAsync(async(req,res,next) => {
-  const {product} = req;
-  const {newQty} = req.body;
+exports.validExistProductInStockForUpdate = catchAsync(
+  async (req, res, next) => {
+    const { product } = req;
+    const { newQty } = req.body;
 
-  if(newQty > product.quantity) {
-    return next(new AppError('The are not enough products in the stock' , 400));
+    if (newQty > product.quantity) {
+      return next(
+        new AppError('The are not enough products in the stock', 400)
+      );
+    }
   }
-});
+);
 
-exports.validExistProductIdByParams = catchAsync(async (req,res,next) => {
-  const {productId} = req.params;
+exports.validExistProductIdByParams = catchAsync(async (req, res, next) => {
+  const { productId } = req.params;
 
   const product = await Product.findOne({
-    where:{
+    where: {
       id: productId,
-      status:true
-    }
-  })
+      status: true,
+    },
+  });
 
-  if(!product){
-    return next(new AppError('Product not found',404))
+  if (!product) {
+    return next(new AppError('Product not found', 404));
   }
 
-  next()
+  next();
 });

@@ -5,10 +5,11 @@ const bcrypt = require('bcryptjs');
 const Order = require('../models/order.model');
 const Cart = require('../models/cart.model');
 const ProductInCart = require('../models/productInCart.model');
-const {ref,getDownloadURL} = require('firebase/storage')
-const {storage} = require('../utils/firebase');
+const { Op } = require('sequelize');
+const { ref, getDownloadURL } = require('firebase/storage');
+const { storage } = require('../utils/firebase');
 
-
+/* A function that is being exported. */
 exports.findUsers = catchAsync(async (req, res, next) => {
   const users = await User.findAll({
     where: {
@@ -16,12 +17,12 @@ exports.findUsers = catchAsync(async (req, res, next) => {
     },
   });
 
-  const usersPromises = users.map( async user => {
+  const usersPromises = users.map(async user => {
     const imgRef = ref(storage, user.profileImageUrl);
     const url = await getDownloadURL(imgRef);
 
-    user.profileImageUrl = url;//modificamos el objeto y le enviamos el profileImageUrl
-    
+    user.profileImageUrl = url;//modificamos el objeto y le enviamos el profileImgUrl
+
     return user;
   });
 
@@ -34,14 +35,14 @@ exports.findUsers = catchAsync(async (req, res, next) => {
   });
 });
 
+/* A function that is being exported. */
 exports.findUser = catchAsync(async (req, res, next) => {
   const { user } = req;
 
   const imgRef = ref(storage, user.profileImageUrl);
   const url = await getDownloadURL(imgRef);
 
-  user.profileImageUrl = url; //solo asignamos para que nos muestre enel postman
-
+  user.profileImageUrl = url;
 
   res.status(200).json({
     status: 'success',
@@ -50,6 +51,7 @@ exports.findUser = catchAsync(async (req, res, next) => {
   });
 });
 
+/* Updating the user. */
 exports.updateUser = catchAsync(async (req, res, next) => {
   const { username, email } = req.body;
   const { user } = req;
@@ -62,6 +64,7 @@ exports.updateUser = catchAsync(async (req, res, next) => {
   });
 });
 
+/* Deleting the user. */
 exports.deleteUser = catchAsync(async (req, res, next) => {
   const { user } = req;
 
@@ -73,6 +76,7 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   });
 });
 
+/* A function that is being exported. */
 exports.updatePassword = catchAsync(async (req, res, next) => {
   const { user } = req;
   const { currentPassword, newPassword } = req.body;
@@ -92,64 +96,69 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     message: 'The user password was updated successfully',
-    
   });
 });
 
-exports.getOrders = catchAsync( async(req,res,next) => {
-  const {sessionUser} = req;
+/* A function that is being exported. */
+exports.getOrders = catchAsync(async (req, res, next) => {
+  const { sessionUser } = req;
 
   const orders = await Order.findAll({
-    where:{
+    where: {
       userId: sessionUser.id,
-      status:true,
+      status: true,
     },
     include: [
       {
         model: Cart,
-        where:{
-          status:'purchased',
+        where: {
+          status: 'purchased',
         },
-        include:{
-          model:ProductInCart,
-          where:{
-            status: 'purchased',
+        include: [
+          {
+            model: ProductInCart,
+            where: {
+              status: 'purchased',
+            },
           },
-        },
+        ],
       },
     ],
-  })
+  });
+
   res.status(200).json({
     orders,
   });
 });
 
-exports.getOrder = catchAsync( async (req,res,next) => {
-  const {id} = req.params;
-  const {sessionUser} = req;
-
+/* A function that is being exported. */
+exports.getOrder = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const { sessionUser } = req;
+  //TODO: acordarme de hacer esta mejora o esta refactorización
   const order = await Order.findOne({
-    where:{
+    where: {
       userId: sessionUser.id,
-      include: [
-        {
-          model:Cart,
-          where:{
-            status: 'purchased',
-          },
-          include: [
-            {
-              model: ProductInCart,
-              where:{
-                status:'purchased',
-              },
-            },
-          ],
-        },
-      ]
+      id,
+      status: true,
     },
+    include: [
+      {
+        model: Cart,
+        where: {
+          status: 'purchased',
+        },
+        include: [
+          {
+            model: ProductInCart,
+            where: {
+              status: 'purchased',
+            },
+          },
+        ],
+      },
+    ],
   });
-  
   res.status(200).json({
     order,
   });

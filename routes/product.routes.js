@@ -7,7 +7,7 @@ const {
   deleteProduct,
   findProduct,
 } = require('../controllers/product.controller');
-const { protect } = require('../middlewares/auth.middleware');
+const { protect, restrictTo } = require('../middlewares/auth.middleware');
 const { validProductById } = require('../middlewares/product.middlewares');
 const { validateFields } = require('../middlewares/validateField.middleware');
 const { upload } = require('../utils/multer');
@@ -35,6 +35,7 @@ router.post(
     check('userId', 'The userId is required').not().isEmpty(),
     check('userId', 'The userId must be a number').isNumeric(),
     validateFields,
+    restrictTo('admin'),
   ],
   createProduct
 );
@@ -54,7 +55,7 @@ router.patch(
   updateProduct
 );
 
-router.delete('/:id', validProductById, deleteProduct);
+router.delete('/:id', validProductById, restrictTo('admin'),deleteProduct);
 
 module.exports = {
   productRouter: router,
