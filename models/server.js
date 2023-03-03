@@ -48,6 +48,8 @@ class Server {
     this.app.use(cors());
     //UTILIZAMOS EXPRESS.JSON PARA PARSEAR EL BODY DE LA REQUEST
     this.app.use(express.json());
+
+    this.app.use(express.urlencoded({ extended: true }));
   }
 
   //RUTAS

@@ -18,11 +18,11 @@ exports.findProducts = catchAsync(async (req, res, next) => {
   });
 
   const productPromises = products.map(async product => {
-    const productImgsPromises = product.productImgs.map(async productImg => {
-      const imgRef = ref(storage, productImg.imgUrl);
-      const url = await getDownloadURL(imgRef);
+    const productImgsPromises = product.productImgs.map(async productImg => { //buscar las imagenes y reemplazarles el link de firebase
+      const imgRef = ref(storage, productImg.imgUrl); //heneralmente la refernecia recibe el storage
+      const url = await getDownloadURL(imgRef);//para descargar una aimgen se necesita la referencia para subirlo s enecesita esta y atambien el buffer
 
-      productImg.imgUrl = url;
+      productImg.imgUrl = url; //reemplazamos done se tenia la imagen en firebase, por la url que me proporciona firebase
       return productImg;
     });
     await Promise.all(productImgsPromises);
